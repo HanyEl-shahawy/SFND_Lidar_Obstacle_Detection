@@ -75,12 +75,40 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
+void cluster_helper(const int i, std::vector<bool>& processed_points,
+        const std::vector<std::vector<float>>& points, std::vector<int>& cluster, KdTree* tree, float d)
+{
+	processed_points[i] = true;
+    cluster.push_back(i);
+    auto nearest_ids = tree->search(points[i], d);
+    for (const auto id : nearest_ids)
+    {
+        if(processed_points[id] == false)
+        {
+            cluster_helper(id, processed_points, points, cluster, tree, d);
+        }
+    }
+
+}
+
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
 
 	std::vector<std::vector<int>> clusters;
+	std::vector<bool> processed_points(points.size(), false);
+
+	for (int i = 0; i < points.size(); ++i)
+    {
+	    if(processed_points[i] == false)
+        {
+	        std::vector<int> cluster;
+            cluster_helper(i, processed_points, points, cluster, tree, distanceTol);
+            clusters.emplace_back(std::move(cluster));
+        }
+    }
+
  
 	return clusters;
 
@@ -101,7 +129,7 @@ int main ()
 
 	// Create data
 	std::vector<std::vector<float>> points = { {-6.2,7}, {-6.3,8.4}, {-5.2,7.1}, {-5.7,6.3}, {7.2,6.1}, {8.0,5.3}, {7.2,7.1}, {0.2,-7.1}, {1.7,-6.9}, {-1.2,-7.2}, {2.2,-8.9} };
-	//std::vector<std::vector<float>> points = { {-6.2,7}, {-6.3,8.4}, {-5.2,7.1}, {-5.7,6.3} };
+	//std::vector<std::vector<float>> points = { {-6.2,7}};
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData(points);
 
 	KdTree* tree = new KdTree;
