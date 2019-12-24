@@ -13,7 +13,7 @@ struct Node
 	Node* right;
 
 	Node(std::vector<float> arr, int setId)
-	:	point(arr), id(setId), left(NULL), right(NULL)
+	:	point(arr), id(setId), left(nullptr), right(nullptr)
 	{}
 };
 
@@ -22,7 +22,7 @@ struct KdTree
 	Node* root;
 
 	KdTree()
-	: root(NULL)
+	: root(nullptr)
 	{}
 private:
 	void insert_helper(Node** p_node, std::vector<float>& point, int id, int depth)

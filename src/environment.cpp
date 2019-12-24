@@ -63,7 +63,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     int clusterId = 0;
     std::vector<Color> colors = {Color(1,0,0), Color(0,1,0), Color(0,0,1)};
 
-    for(pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters)
+    for(pcl::PointCloud<pcl::PointXYZ>::Ptr& cluster : cloudClusters)
     {
         std::cout << "cluster size ";
         //proc_pcl.numPoints(cluster);
@@ -81,16 +81,20 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
 {
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud;
     /*Filter: Crop the scene to requested dimensions and remove the points from the roof top*/
-    filterCloud = pointProcessorI->FilterCloud(inputCloud, 0.15 , Eigen::Vector4f (-20, -6, -2, 1), Eigen::Vector4f ( 30, 7, 5, 1));
+    filterCloud = pointProcessorI->FilterCloud(inputCloud, 0.15 ,
+            Eigen::Vector4f (-10, -6, -2, 1), Eigen::Vector4f ( 30, 7, 5, 1));
     /*Segmentation: Segment the scene to create to clouds one for road and another for objects.*/
-    auto segmentCloud = pointProcessorI->SegmentPlane(filterCloud, 100, 0.2);
+    auto segmentCloud = pointProcessorI->SegmentPlane(filterCloud, 10, 0.3);
     /*Clustering: Identify the clusters from objects*/
-    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessorI->Clustering(segmentCloud.first, 1.0, 3, 30);
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters =
+            pointProcessorI->Clustering(segmentCloud.second, 1.0, 10, 140);
+    renderPointCloud(viewer,segmentCloud.first,"Plane cloud",Color(0,1,0));
+    renderPointCloud(viewer,segmentCloud.second,"Obstacles Cloud",Color(1,0,0));
 
     int clusterId = 0;
     std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1)};
     /*Render the objects along with bounding boxes to the viewer*/
-    for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
+    for(pcl::PointCloud<pcl::PointXYZI>::Ptr& cluster : cloudClusters)
     {
         std::cout << "cluster size ";
         pointProcessorI->numPoints(cluster);
